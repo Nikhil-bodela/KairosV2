@@ -11,6 +11,10 @@ import ExpertFinderComponent from './Student/FindExperts/ExpertFinderComponent';
 import StandardsSelector from './Student/StandardsSelector';
 
 export default function StudentDashboard({ email }) {
+  const openIgniteHelp = () => {
+    google.script.run.openIgniteHelp();
+  };
+
   return (
     <div>
       <IntroductionContainer />
@@ -24,6 +28,17 @@ export default function StudentDashboard({ email }) {
       <AboutMe />
       <SidebarBreakTimer />
       <StandardsSelector />
+      
+      {/* IgniteHelp Button */}
+      <div className="w-full max-w-[300px] font-sans mt-4">
+        <button
+          onClick={openIgniteHelp}
+          className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2"
+        >
+          <span className="text-xl">⚡</span>
+          IgniteHelp
+        </button>
+      </div>
     </div>
   );
 }

@@ -388,6 +388,26 @@ export default function TeacherDashboard() {
           Gate Standards
         </button>
       </div>
+
+      {/* IgniteHelp Button */}
+      <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
+        <button
+          className="td-queue-btn"
+          onClick={() => google.script.run.openIgniteHelp()}
+          title="Get sparked! Access help and resources"
+          style={{
+            background: "linear-gradient(to right, #f97316, #fb923c)",
+            color: "white",
+            border: "none",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px"
+          }}
+        >
+          <span style={{ fontSize: "18px" }}>⚡</span>
+          IgniteHelp
+        </button>
+      </div>
     </div>
   );
 }
