@@ -152,9 +152,9 @@ function openTeacherProjectQueue() {
   openDialog('teacher-project-queue', 'Teacher Project Queue');
 }
 
-// Function to open Resource Library dialog (for both Teacher and Student)
-function openResourceLibrary() {
-  openDialog('resource-library', 'Resource Library');
+// Function to open IgniteHelp dialog (for both Teacher and Student)
+function openIgniteHelp() {
+  openDialog('ignite-help', 'IgniteHelp');
 }
 
 function clearUserCache() {

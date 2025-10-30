@@ -9,11 +9,10 @@ import CreateProject from './Student/CreateProject/CreateProject';
 import SidebarWorkshop from './WorkshopBuilder';
 import ExpertFinderComponent from './Student/FindExperts/ExpertFinderComponent';
 import StandardsSelector from './Student/StandardsSelector';
-import { BookOpen } from 'lucide-react';
 
 export default function StudentDashboard({ email }) {
-  const openResourceLibrary = () => {
-    google.script.run.openResourceLibrary();
+  const openIgniteHelp = () => {
+    google.script.run.openIgniteHelp();
   };
 
   return (
@@ -30,14 +29,14 @@ export default function StudentDashboard({ email }) {
       <SidebarBreakTimer />
       <StandardsSelector />
       
-      {/* Resource Library Button */}
+      {/* IgniteHelp Button */}
       <div className="w-full max-w-[300px] font-sans mt-4">
         <button
-          onClick={openResourceLibrary}
-          className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2"
+          onClick={openIgniteHelp}
+          className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2"
         >
-          <BookOpen className="w-5 h-5" />
-          Open Resource Library
+          <span className="text-xl">⚡</span>
+          IgniteHelp
         </button>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Loader2, ClipboardList, BookOpen } from "lucide-react";
+import { Loader2, ClipboardList } from "lucide-react";
 import "./Teacher.css";
 
 import GatePanel from "./GatePanel";
@@ -389,20 +389,23 @@ export default function TeacherDashboard() {
         </button>
       </div>
 
-      {/* Resource Library Button */}
+      {/* IgniteHelp Button */}
       <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
         <button
           className="td-queue-btn"
-          onClick={() => google.script.run.openResourceLibrary()}
-          title="Open resource library"
+          onClick={() => google.script.run.openIgniteHelp()}
+          title="Get sparked! Access help and resources"
           style={{
-            background: "linear-gradient(to right, #9333ea, #2563eb)",
+            background: "linear-gradient(to right, #f97316, #fb923c)",
             color: "white",
-            border: "none"
+            border: "none",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px"
           }}
         >
-          <BookOpen size={16} />
-          Resource Library
+          <span style={{ fontSize: "18px" }}>⚡</span>
+          IgniteHelp
         </button>
       </div>
     </div>
