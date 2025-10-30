@@ -3,12 +3,14 @@ import "./App.css";
 import LearningStandardsDialog from "./components/Shared/LearningStandards/LearningStandardsDialog";
 import CreateProject from "./components/Student/CreateProject/CreateProject";
 import TeacherProjectQueue from "./components/Teacher/TeacherProjectQueue";
+import ResourceLibrary from "./components/Shared/ResourceLibrary";
 
 const DIALOGS = {
   "student-standards": LearningStandardsDialog,
   "create-project": CreateProject,
   "teacher-project-queue": TeacherProjectQueue,
   "add-standard": LearningStandardsDialog,
+  "resource-library": ResourceLibrary,
 };
 function App() {
   const [dialogType, setDialogType] = useState("dashboard");

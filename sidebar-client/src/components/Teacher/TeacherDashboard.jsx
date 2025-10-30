@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Loader2, ClipboardList } from "lucide-react";
+import { Loader2, ClipboardList, BookOpen } from "lucide-react";
 import "./Teacher.css";
 
 import GatePanel from "./GatePanel";
@@ -386,6 +386,23 @@ export default function TeacherDashboard() {
         >
           <ClipboardList size={16} />
           Gate Standards
+        </button>
+      </div>
+
+      {/* Resource Library Button */}
+      <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
+        <button
+          className="td-queue-btn"
+          onClick={() => google.script.run.openResourceLibrary()}
+          title="Open resource library"
+          style={{
+            background: "linear-gradient(to right, #9333ea, #2563eb)",
+            color: "white",
+            border: "none"
+          }}
+        >
+          <BookOpen size={16} />
+          Resource Library
         </button>
       </div>
     </div>

@@ -152,6 +152,11 @@ function openTeacherProjectQueue() {
   openDialog('teacher-project-queue', 'Teacher Project Queue');
 }
 
+// Function to open Resource Library dialog (for both Teacher and Student)
+function openResourceLibrary() {
+  openDialog('resource-library', 'Resource Library');
+}
+
 function clearUserCache() {
   const p = PropertiesService.getUserProperties();
   ['LEARNING_STANDARDS','USER_ID','USER_ROLE','CACHE_TIMESTAMP','USER_EMAIL','SELECTED_STANDARDS','DIALOG_STATUS']
