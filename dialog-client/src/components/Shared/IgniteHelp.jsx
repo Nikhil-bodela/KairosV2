@@ -1,379 +1,453 @@
-import { useState } from 'react';
-import { X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Plus, Search, Filter, AlertCircle } from 'lucide-react';
+import './IgniteHelp.css';
 
 export default function IgniteHelp() {
-  const [selectedItem, setSelectedItem] = useState(null);
+  const [view, setView] = useState('list'); // 'list', 'create', 'detail'
+  const [tickets, setTickets] = useState([]);
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [filterPriority, setFilterPriority] = useState('all');
+  const [userEmail, setUserEmail] = useState('');
+  const [userRole, setUserRole] = useState('');
 
-  // Sample help items - customize as needed
-  const helpItems = [
+  // New ticket form state
+  const [newTicket, setNewTicket] = useState({
+    title: '',
+    category: 'Technical',
+    priority: 'Medium',
+    description: ''
+  });
+
+  // Sample tickets - Replace with actual API call
+  const sampleTickets = [
     {
       id: 1,
-      title: 'Getting Started Guide',
-      subject: 'Tutorial',
-      status: 'Available',
-      description: 'Learn how to use the platform effectively with step-by-step instructions.',
-      details: 'This comprehensive guide will walk you through all the features of the platform, from creating your first project to collaborating with peers.'
+      title: 'Unable to Submit Project',
+      category: 'Technical',
+      priority: 'High',
+      status: 'Pending',
+      created: '2025-10-29',
+      creator: 'student1@gmail.com',
+      description: 'Getting error when trying to submit my science project. The submit button is not responding.'
     },
     {
       id: 2,
-      title: 'Project Best Practices',
-      subject: 'Guide',
-      status: 'Available',
-      description: 'Tips and strategies for creating outstanding projects.',
-      details: 'Discover proven techniques for project planning, execution, and presentation that will help you achieve better results.'
+      title: 'Need Help with Learning Standards',
+      category: 'Academic',
+      priority: 'Medium',
+      status: 'In Progress',
+      created: '2025-10-28',
+      creator: 'teacher1@gmail.com',
+      description: 'How do I align my project with multiple learning standards?'
     },
     {
       id: 3,
-      title: 'Technical Support',
-      subject: 'Support',
-      status: 'Available',
-      description: 'Get help with technical issues or platform questions.',
-      details: 'Our support team is here to help you resolve any technical challenges you encounter while using the platform.'
+      title: 'Login Issues',
+      category: 'Technical',
+      priority: 'High',
+      status: 'Resolved',
+      created: '2025-10-27',
+      creator: 'student2@gmail.com',
+      description: 'Cannot access my account. Password reset not working.',
+      resolution: 'Password reset link was sent. Issue resolved.'
     },
+    {
+      id: 4,
+      title: 'Project Feedback Request',
+      category: 'Academic',
+      priority: 'Low',
+      status: 'Resolved',
+      created: '2025-10-26',
+      creator: 'student3@gmail.com',
+      description: 'Looking for feedback on my robotics project before final submission.',
+      resolution: 'Feedback provided via email.'
+    }
   ];
 
-  const getStatusColor = (status) => {
+  useEffect(() => {
+    // Simulate loading user info and tickets
+    setTimeout(() => {
+      setUserEmail('teacher1@gmail.com');
+      setUserRole('Teacher');
+      setTickets(sampleTickets);
+      setLoading(false);
+    }, 500);
+  }, []);
+
+  // Filter tickets
+  const filteredTickets = tickets.filter(ticket => {
+    const matchesSearch = ticket.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         ticket.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = filterStatus === 'all' || ticket.status === filterStatus;
+    const matchesPriority = filterPriority === 'all' || ticket.priority === filterPriority;
+    return matchesSearch && matchesStatus && matchesPriority;
+  });
+
+  // Get similar resolved tickets for reference
+  const getSimilarResolvedTickets = (category) => {
+    return tickets.filter(t => 
+      t.category === category && 
+      t.status === 'Resolved'
+    ).slice(0, 3);
+  };
+
+  const handleCreateTicket = () => {
+    const ticket = {
+      id: tickets.length + 1,
+      ...newTicket,
+      status: 'Pending',
+      created: new Date().toISOString().split('T')[0],
+      creator: userEmail
+    };
+    
+    setTickets([ticket, ...tickets]);
+    setNewTicket({ title: '', category: 'Technical', priority: 'Medium', description: '' });
+    setView('list');
+    
+    // TODO: Call backend API
+    // google.script.run.createTicket(ticket);
+  };
+
+  const getStatusClass = (status) => {
     const statusLower = (status || '').toLowerCase();
-    if (statusLower.includes('available')) return 'is-approve';
+    if (statusLower.includes('resolved') || statusLower.includes('closed')) return 'is-approve';
+    if (statusLower.includes('progress')) return 'is-neutral';
     if (statusLower.includes('pending')) return 'is-pending';
-    if (statusLower.includes('unavailable')) return 'is-reject';
-    return 'is-neutral';
+    return 'is-reject';
   };
 
-  const handleViewDetails = (item) => {
-    setSelectedItem(item);
+  const getPriorityClass = (priority) => {
+    if (priority === 'High') return 'priority-high';
+    if (priority === 'Medium') return 'priority-medium';
+    return 'priority-low';
   };
 
-  const handleClose = () => {
-    setSelectedItem(null);
-  };
+  // CREATE TICKET VIEW
+  if (view === 'create') {
+    const similarTickets = getSimilarResolvedTickets(newTicket.category);
+    
+    return (
+      <div className="ignite-container">
+        <div className="ignite-header">
+          <div className="ignite-menu">☰</div>
+          <div className="ignite-email">{userEmail}</div>
+        </div>
 
-  return (
-    <div style={{ 
-      minHeight: '100vh',
-      backgroundColor: '#f9fafb',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-      padding: '24px'
-    }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        {/* Header */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          marginBottom: '32px',
-          gap: '16px'
-        }}>
-          <div style={{
-            width: '48px',
-            height: '48px',
-            background: 'linear-gradient(135deg, #f97316 0%, #fb923c 100%)',
-            borderRadius: '12px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '24px'
-          }}>
-            ⚡
-          </div>
-          <div>
-            <h1 style={{
-              fontSize: '28px',
-              fontWeight: '600',
-              color: '#111827',
-              margin: '0',
-              lineHeight: '1.2'
-            }}>
-              Ignite Help
-            </h1>
-            <p style={{
-              fontSize: '14px',
-              color: '#6b7280',
-              margin: '4px 0 0 0'
-            }}>
-              Get sparked! Access resources and support
-            </p>
+        <div className="ignite-hero">
+          <h1 className="ignite-title">Get Sparked!</h1>
+          <div className="ignite-logo">
+            <svg viewBox="0 0 100 100" className="brain-bulb-icon">
+              <circle cx="50" cy="50" r="35" fill="#f59e0b" opacity="0.2"/>
+              <circle cx="50" cy="50" r="28" fill="#fbbf24"/>
+              <path d="M35 40 L50 25 L65 40" stroke="#92400e" strokeWidth="3" fill="none"/>
+              <path d="M40 50 L50 35 L60 50" stroke="#92400e" strokeWidth="3" fill="none"/>
+              <path d="M45 60 L50 45 L55 60" stroke="#92400e" strokeWidth="3" fill="none"/>
+            </svg>
           </div>
         </div>
 
-        {/* Help Items Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-          gap: '20px',
-          marginBottom: '24px'
-        }}>
-          {helpItems.map((item) => (
-            <div 
-              key={item.id}
-              style={{
-                backgroundColor: 'white',
-                borderRadius: '12px',
-                padding: '20px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                border: '1px solid #e5e7eb',
-                transition: 'all 0.2s ease',
-                cursor: 'pointer'
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
-            >
-              {/* Card Header */}
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'flex-start',
-                marginBottom: '12px'
-              }}>
-                <div style={{ flex: 1 }}>
-                  <h3 style={{
-                    fontSize: '18px',
-                    fontWeight: '600',
-                    color: '#111827',
-                    margin: '0 0 8px 0',
-                    lineHeight: '1.4'
-                  }}>
-                    {item.title}
-                  </h3>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    fontSize: '13px',
-                    color: '#6b7280'
-                  }}>
-                    <span style={{
-                      backgroundColor: '#f3f4f6',
-                      padding: '4px 10px',
-                      borderRadius: '12px',
-                      fontWeight: '500'
-                    }}>
-                      {item.subject}
-                    </span>
-                  </div>
-                </div>
-                <span 
-                  className={`td-status-pill ${getStatusColor(item.status)}`}
-                  style={{
-                    fontSize: '12px',
-                    padding: '6px 12px',
-                    borderRadius: '12px',
-                    fontWeight: '600',
-                    whiteSpace: 'nowrap'
-                  }}
-                >
-                  {item.status}
-                </span>
-              </div>
-
-              {/* Description */}
-              <p style={{
-                fontSize: '14px',
-                color: '#4b5563',
-                lineHeight: '1.6',
-                margin: '0 0 16px 0'
-              }}>
-                {item.description}
-              </p>
-
-              {/* Action Button */}
-              <button
-                onClick={() => handleViewDetails(item)}
-                style={{
-                  width: '100%',
-                  backgroundColor: '#f97316',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  padding: '10px 16px',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.2s ease'
-                }}
-                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#ea580c'}
-                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f97316'}
-              >
-                View Details
-              </button>
-            </div>
-          ))}
-        </div>
-
-        {/* Details Panel (Sidebar) */}
-        {selectedItem && (
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            right: 0,
-            width: '400px',
-            height: '100vh',
-            backgroundColor: 'white',
-            boxShadow: '-4px 0 6px rgba(0,0,0,0.1)',
-            padding: '24px',
-            overflowY: 'auto',
-            zIndex: 1000
-          }}>
-            {/* Close Button */}
-            <button
-              onClick={handleClose}
-              style={{
-                position: 'absolute',
-                top: '16px',
-                right: '16px',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: '8px',
-                borderRadius: '6px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
-              onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-            >
-              <X size={20} color="#6b7280" />
+        <div className="ignite-content">
+          <div className="section-header">
+            <h2 className="section-title">Create New Ticket</h2>
+            <button onClick={() => setView('list')} className="btn-secondary">
+              ← Back to Tickets
             </button>
+          </div>
 
-            {/* Details Content */}
-            <div style={{ paddingTop: '20px' }}>
-              <h2 style={{
-                fontSize: '24px',
-                fontWeight: '600',
-                color: '#111827',
-                margin: '0 0 12px 0',
-                lineHeight: '1.3'
-              }}>
-                {selectedItem.title}
-              </h2>
+          <div className="create-ticket-form">
+            <div className="form-group">
+              <label className="form-label">Ticket Title *</label>
+              <input
+                type="text"
+                value={newTicket.title}
+                onChange={(e) => setNewTicket({...newTicket, title: e.target.value})}
+                placeholder="Brief description of your issue"
+                className="form-input"
+              />
+            </div>
 
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                marginBottom: '16px'
-              }}>
-                <span style={{
-                  backgroundColor: '#f3f4f6',
-                  padding: '6px 12px',
-                  borderRadius: '12px',
-                  fontSize: '13px',
-                  fontWeight: '500',
-                  color: '#6b7280'
-                }}>
-                  {selectedItem.subject}
+            <div className="form-row">
+              <div className="form-group">
+                <label className="form-label">Category *</label>
+                <select
+                  value={newTicket.category}
+                  onChange={(e) => setNewTicket({...newTicket, category: e.target.value})}
+                  className="form-select"
+                >
+                  <option value="Technical">Technical</option>
+                  <option value="Academic">Academic</option>
+                  <option value="Account">Account</option>
+                  <option value="General">General</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Priority *</label>
+                <select
+                  value={newTicket.priority}
+                  onChange={(e) => setNewTicket({...newTicket, priority: e.target.value})}
+                  className="form-select"
+                >
+                  <option value="Low">Low</option>
+                  <option value="Medium">Medium</option>
+                  <option value="High">High</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Description *</label>
+              <textarea
+                value={newTicket.description}
+                onChange={(e) => setNewTicket({...newTicket, description: e.target.value})}
+                placeholder="Provide detailed information about your issue..."
+                className="form-textarea"
+                rows="6"
+              />
+            </div>
+
+            <button 
+              onClick={handleCreateTicket}
+              disabled={!newTicket.title || !newTicket.description}
+              className="btn-primary btn-create"
+            >
+              <Plus size={18} />
+              Create Ticket
+            </button>
+          </div>
+
+          {/* Similar Resolved Tickets */}
+          {similarTickets.length > 0 && (
+            <div className="similar-tickets-section">
+              <div className="alert-info">
+                <AlertCircle size={20} />
+                <div>
+                  <strong>Similar resolved tickets found!</strong>
+                  <p>Check if these solved tickets help answer your question:</p>
+                </div>
+              </div>
+
+              {similarTickets.map(ticket => (
+                <div key={ticket.id} className="ticket-card-mini">
+                  <div className="ticket-card-header">
+                    <h4>{ticket.title}</h4>
+                    <span className="status-pill is-approve">Resolved</span>
+                  </div>
+                  <p className="ticket-description">{ticket.description}</p>
+                  {ticket.resolution && (
+                    <div className="resolution-box">
+                      <strong>Resolution:</strong> {ticket.resolution}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // TICKET DETAIL VIEW
+  if (view === 'detail' && selectedTicket) {
+    return (
+      <div className="ignite-container">
+        <div className="ignite-header">
+          <div className="ignite-menu">☰</div>
+          <div className="ignite-email">{userEmail}</div>
+        </div>
+
+        <div className="ignite-hero">
+          <h1 className="ignite-title">Get Sparked!</h1>
+          <div className="ignite-logo">
+            <svg viewBox="0 0 100 100" className="brain-bulb-icon">
+              <circle cx="50" cy="50" r="35" fill="#f59e0b" opacity="0.2"/>
+              <circle cx="50" cy="50" r="28" fill="#fbbf24"/>
+              <path d="M35 40 L50 25 L65 40" stroke="#92400e" strokeWidth="3" fill="none"/>
+              <path d="M40 50 L50 35 L60 50" stroke="#92400e" strokeWidth="3" fill="none"/>
+              <path d="M45 60 L50 45 L55 60" stroke="#92400e" strokeWidth="3" fill="none"/>
+            </svg>
+          </div>
+        </div>
+
+        <div className="ignite-content">
+          <div className="section-header">
+            <h2 className="section-title">Ticket Details</h2>
+            <button onClick={() => setView('list')} className="btn-secondary">
+              ← Back to Tickets
+            </button>
+          </div>
+
+          <div className="ticket-detail">
+            <div className="ticket-detail-header">
+              <h2>{selectedTicket.title}</h2>
+              <div className="ticket-badges">
+                <span className={`status-pill ${getStatusClass(selectedTicket.status)}`}>
+                  {selectedTicket.status}
                 </span>
-                <span 
-                  className={`td-status-pill ${getStatusColor(selectedItem.status)}`}
-                  style={{
-                    fontSize: '12px',
-                    padding: '6px 12px',
-                    borderRadius: '12px',
-                    fontWeight: '600'
+                <span className={`priority-badge ${getPriorityClass(selectedTicket.priority)}`}>
+                  {selectedTicket.priority}
+                </span>
+              </div>
+            </div>
+
+            <div className="ticket-meta">
+              <div className="meta-item">
+                <span className="meta-label">Category:</span>
+                <span className="category-badge">{selectedTicket.category}</span>
+              </div>
+              <div className="meta-item">
+                <span className="meta-label">Created:</span>
+                <span>{selectedTicket.created}</span>
+              </div>
+              <div className="meta-item">
+                <span className="meta-label">Created by:</span>
+                <span>{selectedTicket.creator}</span>
+              </div>
+            </div>
+
+            <div className="ticket-section">
+              <h3>Description</h3>
+              <p>{selectedTicket.description}</p>
+            </div>
+
+            {selectedTicket.resolution && (
+              <div className="ticket-section resolution-section">
+                <h3>Resolution</h3>
+                <p>{selectedTicket.resolution}</p>
+              </div>
+            )}
+
+            {selectedTicket.status !== 'Resolved' && (
+              <div className="ticket-actions">
+                <button className="btn-primary">Update Ticket</button>
+                <button className="btn-secondary">Add Comment</button>
+                <button className="btn-success">Mark as Resolved</button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // MAIN TICKET LIST VIEW (Default)
+  return (
+    <div className="ignite-container">
+      {/* Header - Exact match to screenshot */}
+      <div className="ignite-header">
+        <div className="ignite-menu">☰</div>
+        <div className="ignite-email">{userEmail}</div>
+      </div>
+
+      {/* Hero Section - Exact match to screenshot */}
+      <div className="ignite-hero">
+        <h1 className="ignite-title">Get Sparked!</h1>
+        <div className="ignite-logo">
+          <svg viewBox="0 0 100 100" className="brain-bulb-icon">
+            <circle cx="50" cy="50" r="35" fill="#f59e0b" opacity="0.2"/>
+            <circle cx="50" cy="50" r="28" fill="#fbbf24"/>
+            <path d="M35 40 L50 25 L65 40" stroke="#92400e" strokeWidth="3" fill="none"/>
+            <path d="M40 50 L50 35 L60 50" stroke="#92400e" strokeWidth="3" fill="none"/>
+            <path d="M45 60 L50 45 L55 60" stroke="#92400e" strokeWidth="3" fill="none"/>
+          </svg>
+        </div>
+      </div>
+
+      {/* Content Section */}
+      <div className="ignite-content">
+        <div className="section-header">
+          <h2 className="section-title">Support Tickets</h2>
+          <button onClick={() => setView('create')} className="btn-primary">
+            <Plus size={18} />
+            New Ticket
+          </button>
+        </div>
+
+        {/* Filters */}
+        <div className="filters-section">
+          <div className="search-box">
+            <Search size={18} className="search-icon" />
+            <input
+              type="text"
+              placeholder="Search tickets..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
+            />
+          </div>
+
+          <div className="filter-group">
+            <Filter size={18} />
+            <select 
+              value={filterStatus} 
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="filter-select"
+            >
+              <option value="all">All Status</option>
+              <option value="Pending">Pending</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Resolved">Resolved</option>
+            </select>
+
+            <select 
+              value={filterPriority} 
+              onChange={(e) => setFilterPriority(e.target.value)}
+              className="filter-select"
+            >
+              <option value="all">All Priority</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Tickets List - Matching screenshot card style */}
+        {loading ? (
+          <div className="loading-state">Loading tickets...</div>
+        ) : filteredTickets.length === 0 ? (
+          <div className="empty-state">
+            <p>No tickets found</p>
+          </div>
+        ) : (
+          <div className="tickets-list">
+            {filteredTickets.map(ticket => (
+              <div key={ticket.id} className="ticket-card">
+                <div className="ticket-card-main">
+                  <div className="ticket-info">
+                    <div className="ticket-title">{ticket.title}</div>
+                    <div className="ticket-meta-row">
+                      <span className="category-badge">{ticket.category}</span>
+                      <span className="separator">•</span>
+                      <span className={`priority-badge ${getPriorityClass(ticket.priority)}`}>
+                        {ticket.priority}
+                      </span>
+                      <span className="separator">•</span>
+                      <span className="ticket-date">{ticket.created}</span>
+                    </div>
+                  </div>
+                  <span className={`status-pill ${getStatusClass(ticket.status)}`}>
+                    {ticket.status}
+                  </span>
+                </div>
+
+                <button 
+                  className="review-btn"
+                  onClick={() => {
+                    setSelectedTicket(ticket);
+                    setView('detail');
                   }}
                 >
-                  {selectedItem.status}
-                </span>
+                  View Details
+                </button>
               </div>
-
-              <div style={{
-                padding: '16px',
-                backgroundColor: '#fef3c7',
-                borderRadius: '8px',
-                marginBottom: '20px',
-                border: '1px solid #fde68a'
-              }}>
-                <p style={{
-                  fontSize: '14px',
-                  color: '#92400e',
-                  margin: 0,
-                  lineHeight: '1.6'
-                }}>
-                  <strong>Quick Tip:</strong> {selectedItem.description}
-                </p>
-              </div>
-
-              <h3 style={{
-                fontSize: '16px',
-                fontWeight: '600',
-                color: '#111827',
-                margin: '0 0 12px 0'
-              }}>
-                Details
-              </h3>
-              
-              <p style={{
-                fontSize: '14px',
-                color: '#4b5563',
-                lineHeight: '1.6',
-                margin: '0 0 20px 0'
-              }}>
-                {selectedItem.details}
-              </p>
-
-              <button
-                style={{
-                  width: '100%',
-                  backgroundColor: '#f97316',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  padding: '12px 16px',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  marginTop: '20px'
-                }}
-                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#ea580c'}
-                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f97316'}
-              >
-                Get Help Now
-              </button>
-            </div>
+            ))}
           </div>
         )}
-
-        {/* Overlay when details panel is open */}
-        {selectedItem && (
-          <div
-            onClick={handleClose}
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0,0,0,0.3)',
-              zIndex: 999
-            }}
-          />
-        )}
-
-        {/* Add CSS for status pills */}
-        <style>{`
-          .td-status-pill.is-approve {
-            background-color: #d1fae5;
-            color: #065f46;
-          }
-          .td-status-pill.is-pending {
-            background-color: #fef3c7;
-            color: #92400e;
-          }
-          .td-status-pill.is-reject {
-            background-color: #fee2e2;
-            color: #991b1b;
-          }
-          .td-status-pill.is-neutral {
-            background-color: #f3f4f6;
-            color: #374151;
-          }
-        `}</style>
       </div>
     </div>
   );
