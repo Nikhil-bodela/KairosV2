@@ -464,6 +464,54 @@ function addTicketComment(ticketId, comment) {
   }
 }
 
+/**
+ * Get instant help solutions based on topic and description
+ */
+function getInstantHelp(topic, description) {
+  try {
+    const userEmail = currentUser();
+    const url = 'https://a3trgqmu4k.execute-api.us-west-1.amazonaws.com/prod/invoke';
+    
+    const payload = {
+      action: "tickets",
+      payload: {
+        request: "instant_help",
+        email_id: userEmail,
+        topic: topic,
+        description: description || ''
+      }
+    };
+    
+    const options = {
+      method: 'post',
+      contentType: 'application/json',
+      payload: JSON.stringify(payload),
+      muteHttpExceptions: true
+    };
+    
+    const response = UrlFetchApp.fetch(url, options);
+    const result = JSON.parse(response.getContentText());
+    
+    if (response.getResponseCode() === 200 && result.status === "success") {
+      return {
+        success: true,
+        solutions: result.action_response.solutions || []
+      };
+    } else {
+      return {
+        success: false,
+        solutions: []
+      };
+    }
+  } catch (error) {
+    Logger.log('Error getting instant help: ' + error.toString());
+    return {
+      success: false,
+      solutions: []
+    };
+  }
+}
+
 function clearUserCache() {
   const p = PropertiesService.getUserProperties();
   ['LEARNING_STANDARDS','USER_ID','USER_ROLE','CACHE_TIMESTAMP','USER_EMAIL','SELECTED_STANDARDS','DIALOG_STATUS']

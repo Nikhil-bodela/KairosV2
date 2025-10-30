@@ -1,340 +1,139 @@
 import { useState, useEffect } from 'react';
-import { X, Plus, Search, Filter, AlertCircle } from 'lucide-react';
+import { Zap, Search, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import './IgniteHelp.css';
 
 export default function IgniteHelp() {
-  const [view, setView] = useState('list'); // 'list', 'create', 'detail'
-  const [tickets, setTickets] = useState([]);
-  const [selectedTicket, setSelectedTicket] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [filterPriority, setFilterPriority] = useState('all');
   const [userEmail, setUserEmail] = useState('');
-  const [userRole, setUserRole] = useState('');
+  const [showInstantHelp, setShowInstantHelp] = useState(false);
+  const [loadingSolutions, setLoadingSolutions] = useState(false);
+  const [suggestedSolutions, setSuggestedSolutions] = useState([]);
+  const [showSuccess, setShowSuccess] = useState(false);
 
-  // New ticket form state
-  const [newTicket, setNewTicket] = useState({
-    title: '',
-    category: 'Technical',
-    priority: 'Medium',
-    description: ''
+  // Ticket form state
+  const [ticketForm, setTicketForm] = useState({
+    topic: '',
+    description: '',
+    priority: 'Medium'
   });
 
-  // Sample tickets - Replace with actual API call
-  const sampleTickets = [
-    {
-      id: 1,
-      title: 'Unable to Submit Project',
-      category: 'Technical',
-      priority: 'High',
-      status: 'Pending',
-      created: '2025-10-29',
-      creator: 'student1@gmail.com',
-      description: 'Getting error when trying to submit my science project. The submit button is not responding.'
-    },
-    {
-      id: 2,
-      title: 'Need Help with Learning Standards',
-      category: 'Academic',
-      priority: 'Medium',
-      status: 'In Progress',
-      created: '2025-10-28',
-      creator: 'teacher1@gmail.com',
-      description: 'How do I align my project with multiple learning standards?'
-    },
-    {
-      id: 3,
-      title: 'Login Issues',
-      category: 'Technical',
-      priority: 'High',
-      status: 'Resolved',
-      created: '2025-10-27',
-      creator: 'student2@gmail.com',
-      description: 'Cannot access my account. Password reset not working.',
-      resolution: 'Password reset link was sent. Issue resolved.'
-    },
-    {
-      id: 4,
-      title: 'Project Feedback Request',
-      category: 'Academic',
-      priority: 'Low',
-      status: 'Resolved',
-      created: '2025-10-26',
-      creator: 'student3@gmail.com',
-      description: 'Looking for feedback on my robotics project before final submission.',
-      resolution: 'Feedback provided via email.'
-    }
+  // Topics/Categories
+  const topics = [
+    'Login & Account Issues',
+    'Project Submission Problems',
+    'Learning Standards Questions',
+    'Technical Errors',
+    'Feature Requests',
+    'General Questions',
+    'Other'
   ];
 
+  // Priority levels
+  const priorities = [
+    { value: 'Low', label: 'Low - Can wait a few days', color: 'priority-low' },
+    { value: 'Medium', label: 'Medium - Need help soon', color: 'priority-medium' },
+    { value: 'High', label: 'High - Urgent assistance needed', color: 'priority-high' }
+  ];
+
+  // Sample solutions database - Replace with API call
+  const solutionsDatabase = {
+    'Login & Account Issues': [
+      {
+        title: 'Cannot log in to my account',
+        solution: 'Try resetting your password using the "Forgot Password" link. If that doesn\'t work, clear your browser cache and try again.',
+        helpfulCount: 45
+      },
+      {
+        title: 'Password reset link not working',
+        solution: 'Check your spam folder for the reset email. If you still don\'t see it, make sure you\'re using the correct email address associated with your account.',
+        helpfulCount: 32
+      }
+    ],
+    'Project Submission Problems': [
+      {
+        title: 'Submit button is not responding',
+        solution: 'Make sure all required fields are filled out. Try refreshing the page and checking your internet connection. If the problem persists, save your work and try using a different browser.',
+        helpfulCount: 58
+      },
+      {
+        title: 'Uploaded files not showing',
+        solution: 'Ensure your files are in the correct format (PDF, DOC, DOCX) and under the 10MB size limit. Try uploading one file at a time.',
+        helpfulCount: 41
+      }
+    ],
+    'Technical Errors': [
+      {
+        title: 'Page keeps loading/freezing',
+        solution: 'Clear your browser cache and cookies. Try disabling browser extensions temporarily. Make sure you\'re using the latest version of Chrome, Firefox, or Edge.',
+        helpfulCount: 67
+      },
+      {
+        title: 'Error messages when saving',
+        solution: 'Check your internet connection. Try saving your work in smaller sections. If the error mentions "timeout", wait a minute and try again.',
+        helpfulCount: 29
+      }
+    ]
+  };
+
   useEffect(() => {
-    // Simulate loading user info and tickets
-    setTimeout(() => {
-      setUserEmail('teacher1@gmail.com');
-      setUserRole('Teacher');
-      setTickets(sampleTickets);
-      setLoading(false);
-    }, 500);
+    // Load user email
+    setUserEmail('teacher1@gmail.com'); // Replace with actual user email
   }, []);
 
-  // Filter tickets
-  const filteredTickets = tickets.filter(ticket => {
-    const matchesSearch = ticket.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         ticket.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || ticket.status === filterStatus;
-    const matchesPriority = filterPriority === 'all' || ticket.priority === filterPriority;
-    return matchesSearch && matchesStatus && matchesPriority;
-  });
+  // Get instant help solutions
+  const handleInstantHelp = () => {
+    if (!ticketForm.topic) {
+      alert('Please select a topic first!');
+      return;
+    }
 
-  // Get similar resolved tickets for reference
-  const getSimilarResolvedTickets = (category) => {
-    return tickets.filter(t => 
-      t.category === category && 
-      t.status === 'Resolved'
-    ).slice(0, 3);
+    setLoadingSolutions(true);
+    setShowInstantHelp(true);
+
+    // Simulate API call - Replace with actual backend call
+    setTimeout(() => {
+      const solutions = solutionsDatabase[ticketForm.topic] || [];
+      setSuggestedSolutions(solutions);
+      setLoadingSolutions(false);
+    }, 800);
   };
 
+  // Create ticket
   const handleCreateTicket = () => {
-    const ticket = {
-      id: tickets.length + 1,
-      ...newTicket,
-      status: 'Pending',
-      created: new Date().toISOString().split('T')[0],
-      creator: userEmail
-    };
-    
-    setTickets([ticket, ...tickets]);
-    setNewTicket({ title: '', category: 'Technical', priority: 'Medium', description: '' });
-    setView('list');
-    
+    if (!ticketForm.topic || !ticketForm.description) {
+      alert('Please fill in all required fields!');
+      return;
+    }
+
     // TODO: Call backend API
-    // google.script.run.createTicket(ticket);
+    // google.script.run
+    //   .withSuccessHandler((result) => {
+    //     if (result.success) {
+    //       setShowSuccess(true);
+    //       setTimeout(() => setShowSuccess(false), 3000);
+    //       setTicketForm({ topic: '', description: '', priority: 'Medium' });
+    //       setShowInstantHelp(false);
+    //     }
+    //   })
+    //   .createTicket(ticketForm);
+
+    // For now, show success message
+    setShowSuccess(true);
+    setTimeout(() => {
+      setShowSuccess(false);
+      setTicketForm({ topic: '', description: '', priority: 'Medium' });
+      setShowInstantHelp(false);
+    }, 2000);
   };
 
-  const getStatusClass = (status) => {
-    const statusLower = (status || '').toLowerCase();
-    if (statusLower.includes('resolved') || statusLower.includes('closed')) return 'is-approve';
-    if (statusLower.includes('progress')) return 'is-neutral';
-    if (statusLower.includes('pending')) return 'is-pending';
-    return 'is-reject';
+  // Handle form changes
+  const updateForm = (field, value) => {
+    setTicketForm(prev => ({ ...prev, [field]: value }));
+    // Hide instant help when user changes topic
+    if (field === 'topic') {
+      setShowInstantHelp(false);
+    }
   };
 
-  const getPriorityClass = (priority) => {
-    if (priority === 'High') return 'priority-high';
-    if (priority === 'Medium') return 'priority-medium';
-    return 'priority-low';
-  };
-
-  // CREATE TICKET VIEW
-  if (view === 'create') {
-    const similarTickets = getSimilarResolvedTickets(newTicket.category);
-    
-    return (
-      <div className="ignite-container">
-        <div className="ignite-header">
-          <div className="ignite-menu">☰</div>
-          <div className="ignite-email">{userEmail}</div>
-        </div>
-
-        <div className="ignite-hero">
-          <h1 className="ignite-title">Get Sparked!</h1>
-          <div className="ignite-logo">
-            <svg viewBox="0 0 100 100" className="brain-bulb-icon">
-              <circle cx="50" cy="50" r="35" fill="#f59e0b" opacity="0.2"/>
-              <circle cx="50" cy="50" r="28" fill="#fbbf24"/>
-              <path d="M35 40 L50 25 L65 40" stroke="#92400e" strokeWidth="3" fill="none"/>
-              <path d="M40 50 L50 35 L60 50" stroke="#92400e" strokeWidth="3" fill="none"/>
-              <path d="M45 60 L50 45 L55 60" stroke="#92400e" strokeWidth="3" fill="none"/>
-            </svg>
-          </div>
-        </div>
-
-        <div className="ignite-content">
-          <div className="section-header">
-            <h2 className="section-title">Create New Ticket</h2>
-            <button onClick={() => setView('list')} className="btn-secondary">
-              ← Back to Tickets
-            </button>
-          </div>
-
-          <div className="create-ticket-form">
-            <div className="form-group">
-              <label className="form-label">Ticket Title *</label>
-              <input
-                type="text"
-                value={newTicket.title}
-                onChange={(e) => setNewTicket({...newTicket, title: e.target.value})}
-                placeholder="Brief description of your issue"
-                className="form-input"
-              />
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label className="form-label">Category *</label>
-                <select
-                  value={newTicket.category}
-                  onChange={(e) => setNewTicket({...newTicket, category: e.target.value})}
-                  className="form-select"
-                >
-                  <option value="Technical">Technical</option>
-                  <option value="Academic">Academic</option>
-                  <option value="Account">Account</option>
-                  <option value="General">General</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Priority *</label>
-                <select
-                  value={newTicket.priority}
-                  onChange={(e) => setNewTicket({...newTicket, priority: e.target.value})}
-                  className="form-select"
-                >
-                  <option value="Low">Low</option>
-                  <option value="Medium">Medium</option>
-                  <option value="High">High</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Description *</label>
-              <textarea
-                value={newTicket.description}
-                onChange={(e) => setNewTicket({...newTicket, description: e.target.value})}
-                placeholder="Provide detailed information about your issue..."
-                className="form-textarea"
-                rows="6"
-              />
-            </div>
-
-            <button 
-              onClick={handleCreateTicket}
-              disabled={!newTicket.title || !newTicket.description}
-              className="btn-primary btn-create"
-            >
-              <Plus size={18} />
-              Create Ticket
-            </button>
-          </div>
-
-          {/* Similar Resolved Tickets */}
-          {similarTickets.length > 0 && (
-            <div className="similar-tickets-section">
-              <div className="alert-info">
-                <AlertCircle size={20} />
-                <div>
-                  <strong>Similar resolved tickets found!</strong>
-                  <p>Check if these solved tickets help answer your question:</p>
-                </div>
-              </div>
-
-              {similarTickets.map(ticket => (
-                <div key={ticket.id} className="ticket-card-mini">
-                  <div className="ticket-card-header">
-                    <h4>{ticket.title}</h4>
-                    <span className="status-pill is-approve">Resolved</span>
-                  </div>
-                  <p className="ticket-description">{ticket.description}</p>
-                  {ticket.resolution && (
-                    <div className="resolution-box">
-                      <strong>Resolution:</strong> {ticket.resolution}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  // TICKET DETAIL VIEW
-  if (view === 'detail' && selectedTicket) {
-    return (
-      <div className="ignite-container">
-        <div className="ignite-header">
-          <div className="ignite-menu">☰</div>
-          <div className="ignite-email">{userEmail}</div>
-        </div>
-
-        <div className="ignite-hero">
-          <h1 className="ignite-title">Get Sparked!</h1>
-          <div className="ignite-logo">
-            <svg viewBox="0 0 100 100" className="brain-bulb-icon">
-              <circle cx="50" cy="50" r="35" fill="#f59e0b" opacity="0.2"/>
-              <circle cx="50" cy="50" r="28" fill="#fbbf24"/>
-              <path d="M35 40 L50 25 L65 40" stroke="#92400e" strokeWidth="3" fill="none"/>
-              <path d="M40 50 L50 35 L60 50" stroke="#92400e" strokeWidth="3" fill="none"/>
-              <path d="M45 60 L50 45 L55 60" stroke="#92400e" strokeWidth="3" fill="none"/>
-            </svg>
-          </div>
-        </div>
-
-        <div className="ignite-content">
-          <div className="section-header">
-            <h2 className="section-title">Ticket Details</h2>
-            <button onClick={() => setView('list')} className="btn-secondary">
-              ← Back to Tickets
-            </button>
-          </div>
-
-          <div className="ticket-detail">
-            <div className="ticket-detail-header">
-              <h2>{selectedTicket.title}</h2>
-              <div className="ticket-badges">
-                <span className={`status-pill ${getStatusClass(selectedTicket.status)}`}>
-                  {selectedTicket.status}
-                </span>
-                <span className={`priority-badge ${getPriorityClass(selectedTicket.priority)}`}>
-                  {selectedTicket.priority}
-                </span>
-              </div>
-            </div>
-
-            <div className="ticket-meta">
-              <div className="meta-item">
-                <span className="meta-label">Category:</span>
-                <span className="category-badge">{selectedTicket.category}</span>
-              </div>
-              <div className="meta-item">
-                <span className="meta-label">Created:</span>
-                <span>{selectedTicket.created}</span>
-              </div>
-              <div className="meta-item">
-                <span className="meta-label">Created by:</span>
-                <span>{selectedTicket.creator}</span>
-              </div>
-            </div>
-
-            <div className="ticket-section">
-              <h3>Description</h3>
-              <p>{selectedTicket.description}</p>
-            </div>
-
-            {selectedTicket.resolution && (
-              <div className="ticket-section resolution-section">
-                <h3>Resolution</h3>
-                <p>{selectedTicket.resolution}</p>
-              </div>
-            )}
-
-            {selectedTicket.status !== 'Resolved' && (
-              <div className="ticket-actions">
-                <button className="btn-primary">Update Ticket</button>
-                <button className="btn-secondary">Add Comment</button>
-                <button className="btn-success">Mark as Resolved</button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // MAIN TICKET LIST VIEW (Default)
   return (
     <div className="ignite-container">
       {/* Header - Exact match to screenshot */}
@@ -357,97 +156,197 @@ export default function IgniteHelp() {
         </div>
       </div>
 
-      {/* Content Section */}
+      {/* Success Message */}
+      {showSuccess && (
+        <div className="success-banner">
+          <CheckCircle size={20} />
+          <span>Ticket created successfully! We'll get back to you soon.</span>
+        </div>
+      )}
+
+      {/* Main Content */}
       <div className="ignite-content">
         <div className="section-header">
-          <h2 className="section-title">Support Tickets</h2>
-          <button onClick={() => setView('create')} className="btn-primary">
-            <Plus size={18} />
-            New Ticket
-          </button>
-        </div>
-
-        {/* Filters */}
-        <div className="filters-section">
-          <div className="search-box">
-            <Search size={18} className="search-icon" />
-            <input
-              type="text"
-              placeholder="Search tickets..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
-            />
-          </div>
-
-          <div className="filter-group">
-            <Filter size={18} />
-            <select 
-              value={filterStatus} 
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="filter-select"
-            >
-              <option value="all">All Status</option>
-              <option value="Pending">Pending</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Resolved">Resolved</option>
-            </select>
-
-            <select 
-              value={filterPriority} 
-              onChange={(e) => setFilterPriority(e.target.value)}
-              className="filter-select"
-            >
-              <option value="all">All Priority</option>
-              <option value="High">High</option>
-              <option value="Medium">Medium</option>
-              <option value="Low">Low</option>
-            </select>
+          <div>
+            <h2 className="section-title">Need Help?</h2>
+            <p className="section-subtitle">Describe your issue and we'll help you find a solution</p>
           </div>
         </div>
 
-        {/* Tickets List - Matching screenshot card style */}
-        {loading ? (
-          <div className="loading-state">Loading tickets...</div>
-        ) : filteredTickets.length === 0 ? (
-          <div className="empty-state">
-            <p>No tickets found</p>
-          </div>
-        ) : (
-          <div className="tickets-list">
-            {filteredTickets.map(ticket => (
-              <div key={ticket.id} className="ticket-card">
-                <div className="ticket-card-main">
-                  <div className="ticket-info">
-                    <div className="ticket-title">{ticket.title}</div>
-                    <div className="ticket-meta-row">
-                      <span className="category-badge">{ticket.category}</span>
-                      <span className="separator">•</span>
-                      <span className={`priority-badge ${getPriorityClass(ticket.priority)}`}>
-                        {ticket.priority}
-                      </span>
-                      <span className="separator">•</span>
-                      <span className="ticket-date">{ticket.created}</span>
-                    </div>
-                  </div>
-                  <span className={`status-pill ${getStatusClass(ticket.status)}`}>
-                    {ticket.status}
-                  </span>
-                </div>
+        <div className="help-layout">
+          {/* Left Side - Create Ticket Form */}
+          <div className="create-ticket-section">
+            <div className="form-card">
+              <h3 className="form-card-title">
+                <AlertCircle size={20} />
+                Create Support Ticket
+              </h3>
 
-                <button 
-                  className="review-btn"
-                  onClick={() => {
-                    setSelectedTicket(ticket);
-                    setView('detail');
-                  }}
+              {/* Topic Selection */}
+              <div className="form-group">
+                <label className="form-label">
+                  What do you need help with? <span className="required">*</span>
+                </label>
+                <select
+                  value={ticketForm.topic}
+                  onChange={(e) => updateForm('topic', e.target.value)}
+                  className="form-select form-select-large"
                 >
-                  View Details
+                  <option value="">Select a topic...</option>
+                  {topics.map(topic => (
+                    <option key={topic} value={topic}>{topic}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Description */}
+              <div className="form-group">
+                <label className="form-label">
+                  Describe your issue <span className="required">*</span>
+                </label>
+                <textarea
+                  value={ticketForm.description}
+                  onChange={(e) => updateForm('description', e.target.value)}
+                  placeholder="Please provide as much detail as possible about your problem..."
+                  className="form-textarea"
+                  rows="6"
+                />
+                <div className="char-count">
+                  {ticketForm.description.length} characters
+                </div>
+              </div>
+
+              {/* Priority */}
+              <div className="form-group">
+                <label className="form-label">
+                  Priority Level <span className="required">*</span>
+                </label>
+                <div className="priority-options">
+                  {priorities.map(priority => (
+                    <label
+                      key={priority.value}
+                      className={`priority-option ${ticketForm.priority === priority.value ? 'selected' : ''} ${priority.color}`}
+                    >
+                      <input
+                        type="radio"
+                        name="priority"
+                        value={priority.value}
+                        checked={ticketForm.priority === priority.value}
+                        onChange={(e) => updateForm('priority', e.target.value)}
+                      />
+                      <div className="priority-label">
+                        <strong>{priority.value}</strong>
+                        <span>{priority.label}</span>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="form-actions">
+                <button
+                  onClick={handleInstantHelp}
+                  className="btn-instant-help"
+                  disabled={!ticketForm.topic}
+                >
+                  <Zap size={18} />
+                  Instant Help
+                </button>
+
+                <button
+                  onClick={handleCreateTicket}
+                  className="btn-create-ticket"
+                  disabled={!ticketForm.topic || !ticketForm.description}
+                >
+                  Create Ticket
                 </button>
               </div>
-            ))}
+
+              <div className="form-footer">
+                <p className="help-text">
+                  💡 Try <strong>Instant Help</strong> first to see if we already have a solution!
+                </p>
+              </div>
+            </div>
           </div>
-        )}
+
+          {/* Right Side - Instant Help Solutions */}
+          {showInstantHelp && (
+            <div className="instant-help-section">
+              <div className="solutions-card">
+                <div className="solutions-header">
+                  <h3 className="solutions-title">
+                    <Zap size={20} />
+                    Instant Solutions
+                  </h3>
+                  <button 
+                    className="close-solutions"
+                    onClick={() => setShowInstantHelp(false)}
+                  >
+                    ×
+                  </button>
+                </div>
+
+                {loadingSolutions ? (
+                  <div className="loading-solutions">
+                    <div className="spinner"></div>
+                    <p>Finding solutions for you...</p>
+                  </div>
+                ) : suggestedSolutions.length > 0 ? (
+                  <>
+                    <div className="solutions-intro">
+                      <p>Here are some solutions that helped others with similar issues:</p>
+                    </div>
+
+                    <div className="solutions-list">
+                      {suggestedSolutions.map((solution, index) => (
+                        <div key={index} className="solution-item">
+                          <div className="solution-header">
+                            <h4 className="solution-title">{solution.title}</h4>
+                            <div className="helpful-badge">
+                              <CheckCircle size={14} />
+                              {solution.helpfulCount} found helpful
+                            </div>
+                          </div>
+                          <p className="solution-text">{solution.solution}</p>
+                          <div className="solution-actions">
+                            <button className="btn-solution-action">
+                              This helped! ✓
+                            </button>
+                            <button className="btn-solution-action secondary">
+                              Still need help
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="solutions-footer">
+                      <p className="solutions-footer-text">
+                        <strong>Still having issues?</strong> Create a ticket and our support team will assist you personally.
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <div className="no-solutions">
+                    <Search size={40} className="no-solutions-icon" />
+                    <h4>No instant solutions found</h4>
+                    <p>Don't worry! Create a ticket and our support team will help you.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* View Past Tickets Link */}
+        <div className="past-tickets-link">
+          <Clock size={18} />
+          <a href="#" onClick={(e) => { e.preventDefault(); /* TODO: Implement */ }}>
+            View My Past Tickets
+          </a>
+        </div>
       </div>
     </div>
   );
